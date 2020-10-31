@@ -1,6 +1,7 @@
 package consts;
 
 import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 
 import static consts.Constant.*;
 import static consts.Constant.ROOT;
@@ -10,24 +11,20 @@ import static org.hamcrest.Matchers.*;
 
 public class ApiMethods {
     public static Response getCurrency(String value){
-        Response response = given().get(String.format("%s%s%s%s%s", ROOT, Constant.LIVE_ENDPOINT, ACCESS_KEY, CURRENCY_ENDPOINT, value));
-        return response;
+        return given().get(String.format("%s%s%s%s%s", ROOT, LIVE_ENDPOINT, ACCESS_KEY, CURRENCY_ENDPOINT, value));
 
     }
     public static Response noAccessKey() {
-        Response response = given().get(String.format("%s%s", ROOT, Constant.LIVE_ENDPOINT));
-        return response;
+        return given().get(String.format("%s%s", ROOT, LIVE_ENDPOINT));
     }
 
 
-    public static boolean StatusCod() {
-        Response response = null;
-        response.then().statusCode(200).body("success", equalTo(true));
-        return true;
+    public static boolean StatusCod(String path) {
+       boolean code = given().get(path).then().body(notNullValue()).extract().path("success");
+        return code;
     }
 
     public static Response SanityWithCorrectKey() {
-        Response response = given().get(String.format("%s%s%s", ROOT, Constant.LIVE_ENDPOINT, ACCESS_KEY));
-        return response;
+        return given().get(String.format("%s%s%s", ROOT, LIVE_ENDPOINT, ACCESS_KEY));
     }
 }

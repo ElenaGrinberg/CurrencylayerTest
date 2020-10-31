@@ -2,6 +2,8 @@
 import consts.ApiMethods;
 import consts.Constant;
 import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
+import org.hamcrest.generator.qdox.junit.APITestCase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,11 +29,10 @@ public class CurrencyAPITest {
     @Test
     public void noAccessKeyTest() {
         Response response = ApiMethods.noAccessKey();
-        response.
-                then().statusCode(200).
-                and().body("success", equalTo(false)).
-                and().body("error.code", equalTo(101)).
-                and().body("error.type", equalTo("missing_access_key"));
+        response.then().statusCode(200)
+                .body("success", equalTo(false))
+                 .body("error.code", equalTo(101))
+                 .body("error.type", equalTo("missing_access_key"));
     }
 
 
@@ -53,7 +54,7 @@ public class CurrencyAPITest {
     @DisplayName("The current Subscription Plan does not support Source Currency Switching")
     @ValueSource(strings = {"&source=EUR", "&source=CAD", "&source=ILS", "&source=RUB"})
     public void liveSourceChangeTest(String source) {
-        Response response = given().get(String.format("%s%s%s%s%s%s%s", ROOT, Constant.LIVE_ENDPOINT, ACCESS_KEY, CURRENCY_ENDPOINT, source, CURRENCY_ENDPOINT, source));
+        Response response = given().get(String.format("%s%s%s%s%s%s%s", ROOT, LIVE_ENDPOINT, ACCESS_KEY, CURRENCY_ENDPOINT, source, CURRENCY_ENDPOINT, source));
         response.then().statusCode(200)
                 .body("success", equalTo(false))
                 .body("error.info", notNullValue())
@@ -63,10 +64,12 @@ public class CurrencyAPITest {
 
     }
 
-    //
+
     @Test
     public void historicalCorrectDateTest() {
         String root = String.format("%s%s%s%s", ROOT, HISTORICAL_ENDPOINT, ACCESS_KEY, HISTORICAL_DATE);
+        boolean status = ApiMethods.StatusCod(root);
+        Assertions.assertTrue(status);
         Response response = given().get(root);
         response.then().statusCode(200).body("success", equalTo(true));
                 response.then().body("source", equalTo("USD"))
@@ -84,7 +87,7 @@ public class CurrencyAPITest {
 
     @Test
     public void NegativeWithIncorrectKey() {
-        String stringInvalidKey = String.format("%s%s%s", ROOT, Constant.LIVE_ENDPOINT, INVALID_KEY);
+        String stringInvalidKey = String.format("%s%s%s", ROOT, LIVE_ENDPOINT, INVALID_KEY);
         Response response = given().get(stringInvalidKey);
         response.then().statusCode(200);
         response.then().body("success", equalTo(false))
@@ -97,7 +100,7 @@ public class CurrencyAPITest {
     @Test
     @DisplayName("Error 202 - non-existent API function")
     public void error202Test() {
-        Response response = given().get(ROOT + Constant.LIVE_ENDPOINT + ACCESS_KEY + "&currencies=RUS");
+        Response response = given().get(ROOT + LIVE_ENDPOINT + ACCESS_KEY + "&currencies=RUS");
         response.then().statusCode(200);
         response.then().body("success", equalTo(false))
                 .body("error.code", equalTo(202));
@@ -108,7 +111,7 @@ public class CurrencyAPITest {
     @Test
     @DisplayName("Error 105 - subscription plan does not support the endpoint")
     public void error105Test() {
-        String incorrectEndpoint = String.format("%s%s%s%s", ROOT, Constant.LIVE_ENDPOINT, ACCESS_KEY, ENDPOINT_OUT_SUBSCRIPTION);
+        String incorrectEndpoint = String.format("%s%s%s%s", ROOT, LIVE_ENDPOINT, ACCESS_KEY, ENDPOINT_OUT_SUBSCRIPTION);
         Response response = given().get(incorrectEndpoint);
         response.then().statusCode(200);
         response.then().body("success", equalTo(false));
@@ -118,7 +121,7 @@ public class CurrencyAPITest {
     @Test
     @DisplayName("Error 201 - invalid Source")
     public void error201Test() {
-        Response response = given().get(ROOT + Constant.LIVE_ENDPOINT + ACCESS_KEY + "&currencies=EUR,GBP,CAD&source=RUS&format=1");
+        Response response = given().get(ROOT + LIVE_ENDPOINT + ACCESS_KEY + "&currencies=EUR,GBP,CAD&source=RUS&format=1");
         response.then().statusCode(200);
         response.then().body("success", equalTo(false));
         response.then().assertThat().body("error.code", equalTo(201));
